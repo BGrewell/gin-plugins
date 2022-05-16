@@ -2,6 +2,8 @@ package loader
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"github.com/BGrewell/go-execute"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -17,10 +19,11 @@ type PluginLoader interface {
 	ClosePlugin(pluginName string) (err error)
 }
 
-func NewPluginLoader(pluginDirectory string, routeGroup *gin.RouterGroup) PluginLoader {
+func NewPluginLoader(pluginDirectory string, cookie string, routeGroup *gin.RouterGroup) PluginLoader {
 	l := &DefaultPluginLoader{
 		PluginDirectory: pluginDirectory,
 		RouteGroup:      routeGroup,
+		Cookie:          cookie,
 		plugins:         make(map[string]*PluginInfo),
 		routeMap:        make(map[string]*HandlerEntry),
 	}
@@ -28,7 +31,7 @@ func NewPluginLoader(pluginDirectory string, routeGroup *gin.RouterGroup) Plugin
 	return l
 }
 
-func executePlugin(pluginPath string) (info *PluginInfo, err error) {
+func executePlugin(pluginPath string, expectedCookie string) (info *PluginInfo, err error) {
 	stdout, _, exitChan, cancel, err := execute.ExecuteAsyncWithCancel(pluginPath, nil)
 	if err != nil {
 		return nil, err
@@ -56,6 +59,11 @@ func executePlugin(pluginPath string) (info *PluginInfo, err error) {
 		CancelToken: &cancel,
 		ExitChan:    exitChan,
 		ExitCode:    0,
+	}
+
+	// Ensure the cookies match
+	if info.Cookie != expectedCookie {
+		return nil, errors.New(fmt.Sprintf("cookie: %s did not match expected value %s", info.Cookie, expectedCookie))
 	}
 
 	// Create a go routine to watch for the plugin to exit

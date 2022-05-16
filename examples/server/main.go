@@ -34,7 +34,7 @@ func main() {
 	r := setupRouter()
 	rg := r.Group("plugins")
 
-	l := loader.NewPluginLoader("/home/ben/repos/gin-plugins/examples/server/plugins/", rg)
+	l := loader.NewPluginLoader("/home/ben/repos/gin-plugins/examples/server/plugins/", "this_is_not_a_security_feature", rg)
 	active, err := l.Initialize()
 	if err != nil {
 		log.Fatal(err)

@@ -14,6 +14,7 @@ import (
 
 type DefaultPluginLoader struct {
 	PluginDirectory string
+	Cookie          string
 	RouteGroup      *gin.RouterGroup
 	plugins         map[string]*PluginInfo
 	routeMap        map[string]*HandlerEntry
@@ -57,7 +58,7 @@ func (pl *DefaultPluginLoader) ListPlugins() (plugins []string, err error) {
 }
 
 func (pl *DefaultPluginLoader) LaunchPlugin(pluginPath string) (info *PluginInfo, err error) {
-	info, err = executePlugin(pluginPath)
+	info, err = executePlugin(pluginPath, pl.Cookie)
 	if err != nil {
 		return nil, err
 	}
