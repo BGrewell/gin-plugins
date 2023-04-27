@@ -6,6 +6,7 @@ import (
 	plugins "github.com/BGrewell/gin-plugins"
 	"github.com/BGrewell/gin-plugins/helpers"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/rpc"
@@ -211,12 +212,31 @@ func (pl *DefaultPluginLoader) callShim(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("plugin has exited with code: %d", pl.plugins[handler.PluginName].ExitCode)})
 			return
 		}
+		var err error
+
+		// Get the plugin
 		plug := pl.plugins[handler.PluginName]
-		args := plugins.Args{}
+
+		// Get the body if there is one
+		data := make([]byte, 0)
+		contentLength := c.Request.ContentLength
+		if contentLength > 0 {
+			data, err = ioutil.ReadAll(c.Request.Body)
+			if err != nil {
+				// handle error
+			}
+		}
+
+		// Populate the args
+		args := plugins.Args{
+			QueryParams: c.Request.URL.Query(),
+			Headers:     c.Request.Header,
+			Data:        data,
+		}
 		var reply string
 
 		// Make the rpc call
-		err := plug.Rpc.Call(fmt.Sprintf("%s.%s", plug.Name, handler.HandleFunc), args, &reply)
+		err = plug.Rpc.Call(fmt.Sprintf("%s.%s", plug.Name, handler.HandleFunc), args, &reply)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
 			return

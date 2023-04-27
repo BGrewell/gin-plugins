@@ -6,6 +6,9 @@ import (
 )
 
 type Args struct {
+	QueryParams map[string][]string
+	Headers     map[string][]string
+	Data        []byte
 }
 
 type Reply struct {
