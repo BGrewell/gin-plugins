@@ -2,7 +2,7 @@ package host
 
 import (
 	"errors"
-	plugins "github.com/BGrewell/gin-plugins"
+	plugins "github.com/bgrewell/gin-plugins"
 )
 
 type PluginHost interface {

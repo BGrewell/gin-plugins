@@ -2,8 +2,8 @@ package host
 
 import (
 	"fmt"
-	plugins "github.com/BGrewell/gin-plugins"
-	"github.com/BGrewell/gin-plugins/helpers"
+	plugins "github.com/bgrewell/gin-plugins"
+	"github.com/bgrewell/gin-plugins/helpers"
 	"io/ioutil"
 	"log"
 	"net"

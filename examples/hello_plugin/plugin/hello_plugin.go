@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	plugins "github.com/BGrewell/gin-plugins"
+	plugins "github.com/bgrewell/gin-plugins"
 	"net/http"
 	"reflect"
 )

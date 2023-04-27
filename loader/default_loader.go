@@ -3,8 +3,8 @@ package loader
 import (
 	"errors"
 	"fmt"
-	plugins "github.com/BGrewell/gin-plugins"
-	"github.com/BGrewell/gin-plugins/helpers"
+	plugins "github.com/bgrewell/gin-plugins"
+	"github.com/bgrewell/gin-plugins/helpers"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"log"

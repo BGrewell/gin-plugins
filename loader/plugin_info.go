@@ -2,7 +2,7 @@ package loader
 
 import (
 	"context"
-	plugins "github.com/BGrewell/gin-plugins"
+	plugins "github.com/bgrewell/gin-plugins"
 	"net/rpc"
 )
 

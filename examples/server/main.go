@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/BGrewell/gin-plugins/loader"
+	"github.com/bgrewell/gin-plugins/loader"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"

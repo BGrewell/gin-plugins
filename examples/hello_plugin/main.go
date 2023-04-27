@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/BGrewell/gin-plugins/examples/hello_plugin/plugin"
-	"github.com/BGrewell/gin-plugins/host"
+	"github.com/bgrewell/gin-plugins/examples/hello_plugin/plugin"
+	"github.com/bgrewell/gin-plugins/host"
 	"log"
 )
 
