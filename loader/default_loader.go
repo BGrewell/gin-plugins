@@ -32,6 +32,7 @@ func (pl *DefaultPluginLoader) Initialize() (loadedPlugins []*PluginInfo, err er
 	}
 
 	for _, plug := range plugs {
+		fmt.Printf("checking plug: %s\n", plug)
 		if config, exists := pl.PluginConfigs[plug]; exists && config.Enabled || pl.loadUnconfiguredPlugins {
 			// Launch plugins
 			info, err := pl.LaunchPlugin(pl.PluginConfigs[plug])
