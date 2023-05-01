@@ -14,11 +14,12 @@ import (
 )
 
 type DefaultPluginLoader struct {
-	PluginDirectory string
-	Cookie          string
-	RouteGroup      *gin.RouterGroup
-	plugins         map[string]*PluginInfo
-	routeMap        map[string]*HandlerEntry
+	PluginDirectory         string
+	PluginConfigs           map[string]*PluginConfig
+	RouteGroup              *gin.RouterGroup
+	loadUnconfiguredPlugins bool
+	plugins                 map[string]*PluginInfo
+	routeMap                map[string]*HandlerEntry
 }
 
 func (pl *DefaultPluginLoader) Initialize() (loadedPlugins []*PluginInfo, err error) {
@@ -31,18 +32,20 @@ func (pl *DefaultPluginLoader) Initialize() (loadedPlugins []*PluginInfo, err er
 	}
 
 	for _, plug := range plugs {
-		// Launch plugins
-		info, err := pl.LaunchPlugin(plug)
-		if err != nil {
-			return nil, err
-		}
+		if config, exists := pl.PluginConfigs[plug]; exists && config.Enabled || pl.loadUnconfiguredPlugins {
+			// Launch plugins
+			info, err := pl.LaunchPlugin(pl.PluginConfigs[plug])
+			if err != nil {
+				return nil, err
+			}
 
-		// Register plugins
-		err = pl.RegisterPlugin(info.Name)
-		if err != nil {
-			return nil, err
+			// Register plugins
+			err = pl.RegisterPlugin(info.Name)
+			if err != nil {
+				return nil, err
+			}
+			loadedPlugins = append(loadedPlugins, info)
 		}
-		loadedPlugins = append(loadedPlugins, info)
 	}
 
 	// Register control routes GET methods are just there for ease of use
@@ -54,12 +57,14 @@ func (pl *DefaultPluginLoader) Initialize() (loadedPlugins []*PluginInfo, err er
 	return loadedPlugins, nil
 }
 
+// ListPlugins returns a list of all plugins in the plugin directory
 func (pl *DefaultPluginLoader) ListPlugins() (plugins []string, err error) {
 	return helpers.FindPlugins(pl.PluginDirectory, "*.plugin")
 }
 
-func (pl *DefaultPluginLoader) LaunchPlugin(pluginPath string) (info *PluginInfo, err error) {
-	info, err = executePlugin(pluginPath, pl.Cookie)
+// LaunchPlugin launches a plugin and returns the info on the running plugin
+func (pl *DefaultPluginLoader) LaunchPlugin(config *PluginConfig) (info *PluginInfo, err error) {
+	info, err = executePlugin(config)
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +72,7 @@ func (pl *DefaultPluginLoader) LaunchPlugin(pluginPath string) (info *PluginInfo
 	return info, err
 }
 
+// RegisterPlugin registers the plugin routes with Gin
 func (pl *DefaultPluginLoader) RegisterPlugin(pluginName string) (err error) {
 
 	if plug, ok := pl.plugins[pluginName]; !ok {
@@ -121,6 +127,7 @@ func (pl *DefaultPluginLoader) RegisterPlugin(pluginName string) (err error) {
 	return nil
 }
 
+// UnregisterPlugin is used to unregister the plugin from Gin
 func (pl *DefaultPluginLoader) UnregisterPlugin(pluginName string) (err error) {
 	if _, ok := pl.plugins[pluginName]; !ok {
 		return errors.New("plugin not found")
@@ -129,6 +136,7 @@ func (pl *DefaultPluginLoader) UnregisterPlugin(pluginName string) (err error) {
 	}
 }
 
+// ClosePlugin is used to stop the plugin process
 func (pl *DefaultPluginLoader) ClosePlugin(pluginName string) (err error) {
 	if plug, ok := pl.plugins[pluginName]; !ok {
 		return errors.New("plugin not found")
@@ -139,6 +147,7 @@ func (pl *DefaultPluginLoader) ClosePlugin(pluginName string) (err error) {
 	return nil
 }
 
+// Load is used to load a plugin by name
 func (pl *DefaultPluginLoader) Load(c *gin.Context) {
 	if name, ok := c.GetQuery("name"); ok {
 		if plug, ok := pl.plugins[name]; ok {
@@ -146,12 +155,12 @@ func (pl *DefaultPluginLoader) Load(c *gin.Context) {
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "plugin is already loaded"})
 				return
 			}
-			_, err := pl.LaunchPlugin(plug.Path)
+			_, err := pl.LaunchPlugin(pl.plugins[name].PluginConfig)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 				return
 			}
-			err = pl.RegisterPlugin(plug.Name)
+			err = pl.RegisterPlugin(name)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 				return
@@ -167,6 +176,7 @@ func (pl *DefaultPluginLoader) Load(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "plugin loaded"})
 }
 
+// Unload is used to unload a plugin by name
 func (pl *DefaultPluginLoader) Unload(c *gin.Context) {
 	if name, ok := c.GetQuery("name"); ok {
 		if plug, ok := pl.plugins[name]; ok {
@@ -195,6 +205,9 @@ func (pl *DefaultPluginLoader) Unload(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "plugin unloaded"})
 }
 
+// callShim is used to make a call into a plugins function. It acts as a shim between the main Gin process and the
+// plugin. It builds a args struct then calls the handler inside the plugin and returns the value that is returned
+// from the plugin after the plugin function has finished.
 func (pl *DefaultPluginLoader) callShim(c *gin.Context) {
 
 	// Extract the RouteKey
