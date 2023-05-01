@@ -86,7 +86,7 @@ func executePlugin(config *PluginConfig) (info *PluginInfo, err error) {
 	fmt.Printf("%s: verifying cookie\n", config.Name())
 	// Ensure the cookies match
 	if info.Cookie != config.Cookie {
-		fmt.Printf("%s: cookie: %s did not match expected value %s", config.Name(), info.Cookie, config.Cookie))
+		fmt.Printf("%s: cookie: %s did not match expected value %s", config.Name(), info.Cookie, config.Cookie)
 		return nil, errors.New(fmt.Sprintf("cookie: %s did not match expected value %s", info.Cookie, config.Cookie))
 	}
 
