@@ -31,17 +31,9 @@ func (pl *DefaultPluginLoader) Initialize() (loadedPlugins []*PluginInfo, err er
 		return nil, err
 	}
 
-	for k, v := range pl.PluginConfigs {
-		fmt.Printf("%s: %v\n", k, v)
-	}
-
 	for _, plug := range plugs {
 
-		fmt.Printf("plug: %s\n", plug)
-
 		if config, exists := pl.PluginConfigs[plug]; exists && config.Enabled || pl.loadUnconfiguredPlugins {
-
-			fmt.Printf("launching: %s\n", plug)
 
 			// Launch plugins
 			info, err := pl.LaunchPlugin(pl.PluginConfigs[plug])
@@ -49,16 +41,12 @@ func (pl *DefaultPluginLoader) Initialize() (loadedPlugins []*PluginInfo, err er
 				return nil, err
 			}
 
-			fmt.Printf("registering: %s\n", plug)
-
 			// Register plugins
 			err = pl.RegisterPlugin(info.Name)
 			if err != nil {
 				return nil, err
 			}
 			loadedPlugins = append(loadedPlugins, info)
-
-			fmt.Printf("done loading: %s\n", plug)
 		}
 	}
 
@@ -89,13 +77,10 @@ func (pl *DefaultPluginLoader) LaunchPlugin(config *PluginConfig) (info *PluginI
 // RegisterPlugin registers the plugin routes with Gin
 func (pl *DefaultPluginLoader) RegisterPlugin(pluginName string) (err error) {
 
-	fmt.Printf("%s: checking for plugin", pluginName)
 	if plug, ok := pl.plugins[pluginName]; !ok {
-		fmt.Printf("%s: plugin not found", pluginName)
 		return errors.New(fmt.Sprintf("no plugin was found with the name: %s", pluginName))
 	} else {
 		// Connect the rpc client
-		fmt.Printf("%s: connecting", pluginName)
 		plug.Rpc, err = rpc.DialHTTP(plug.Proto, fmt.Sprintf("%s:%d", plug.Ip, plug.Port))
 		if err != nil {
 			return err
