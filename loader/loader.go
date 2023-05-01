@@ -46,11 +46,13 @@ func NewPluginLoader(pluginDirectory string, plugConfigs map[string]*PluginConfi
 func executePlugin(config *PluginConfig) (info *PluginInfo, err error) {
 	// If the hash was configured with a sha1 hash verify that the loaded image matches the expected value
 	if config.Hash != "" {
+		fmt.Printf("%s: verifying hash\n", config.Name())
 		if err := hashValid(config.PluginPath, config.Hash); err == nil {
 			return nil, err
 		}
 	}
 
+	fmt.Printf("%s: launching plugin: %s\n", config.Name(), config.PluginPath)
 	stdout, _, exitChan, cancel, err := execute.ExecuteAsyncWithCancel(config.PluginPath, nil)
 	if err != nil {
 		return nil, err
@@ -81,6 +83,7 @@ func executePlugin(config *PluginConfig) (info *PluginInfo, err error) {
 		PluginConfig: config,
 	}
 
+	fmt.Printf("%s: verifying cookie\n", config.Name())
 	// Ensure the cookies match
 	if info.Cookie != config.Cookie {
 		return nil, errors.New(fmt.Sprintf("cookie: %s did not match expected value %s", info.Cookie, config.Cookie))
@@ -92,7 +95,7 @@ func executePlugin(config *PluginConfig) (info *PluginInfo, err error) {
 		info.ExitCode = ec
 		info.HasExited = true
 	}()
-
+	fmt.Printf("%s: done\n", config.Name())
 	return info, nil
 }
 
