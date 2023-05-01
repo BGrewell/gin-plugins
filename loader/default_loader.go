@@ -49,12 +49,16 @@ func (pl *DefaultPluginLoader) Initialize() (loadedPlugins []*PluginInfo, err er
 				return nil, err
 			}
 
+			fmt.Printf("registering: %s\n", plug)
+
 			// Register plugins
 			err = pl.RegisterPlugin(info.Name)
 			if err != nil {
 				return nil, err
 			}
 			loadedPlugins = append(loadedPlugins, info)
+
+			fmt.Printf("done loading: %s\n", plug)
 		}
 	}
 
