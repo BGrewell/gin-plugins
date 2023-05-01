@@ -89,16 +89,21 @@ func (pl *DefaultPluginLoader) LaunchPlugin(config *PluginConfig) (info *PluginI
 // RegisterPlugin registers the plugin routes with Gin
 func (pl *DefaultPluginLoader) RegisterPlugin(pluginName string) (err error) {
 
+	fmt.Printf("%s: checking for plugin", pluginName)
 	if plug, ok := pl.plugins[pluginName]; !ok {
+		fmt.Printf("%s: plugin not found", pluginName)
 		return errors.New(fmt.Sprintf("no plugin was found with the name: %s", pluginName))
 	} else {
 		// Connect the rpc client
+		fmt.Printf("%s: connecting", pluginName)
 		plug.Rpc, err = rpc.DialHTTP(plug.Proto, fmt.Sprintf("%s:%d", plug.Ip, plug.Port))
 		if err != nil {
 			return err
 		}
 		// Register the plugin
-		ra := plugins.RegisterArgs{}
+		ra := plugins.RegisterArgs{
+			Config: pl.plugins[pluginName].PluginConfig.Config,
+		}
 		rr := &plugins.RegisterReply{}
 		err = plug.Rpc.Call(fmt.Sprintf("%s.Register", plug.Name), ra, rr)
 		if err != nil {
