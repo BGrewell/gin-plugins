@@ -32,7 +32,7 @@ func (pl *DefaultPluginLoader) Initialize() (loadedPlugins []*PluginInfo, err er
 	}
 
 	for k, v := range pl.PluginConfigs {
-		fmt.Printf("%k: %v\n", k, v)
+		fmt.Printf("%s: %v\n", k, v)
 	}
 
 	for _, plug := range plugs {
