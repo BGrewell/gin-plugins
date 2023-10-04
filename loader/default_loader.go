@@ -3,14 +3,15 @@ package loader
 import (
 	"errors"
 	"fmt"
-	plugins "github.com/bgrewell/gin-plugins"
-	"github.com/bgrewell/gin-plugins/helpers"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/rpc"
 	"strings"
+
+	plugins "github.com/bgrewell/gin-plugins"
+	"github.com/bgrewell/gin-plugins/helpers"
+	"github.com/gin-gonic/gin"
 )
 
 type DefaultPluginLoader struct {
@@ -217,7 +218,7 @@ func (pl *DefaultPluginLoader) callShim(c *gin.Context) {
 	// Extract the RouteKey
 	routeKey := fmt.Sprintf("%s:%s",
 		c.Request.Method,
-		strings.Replace(c.FullPath(), "/plugins/", "", 1))
+		strings.Replace(c.FullPath(), pl.RouteGroup.BasePath(), "", 1))
 
 	// Get the HandlerEntry
 	if handler, ok := pl.routeMap[routeKey]; !ok {
