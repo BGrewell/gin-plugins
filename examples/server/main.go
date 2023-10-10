@@ -32,7 +32,7 @@ func setupRouter() *gin.Engine {
 func main() {
 
 	r := setupRouter()
-	rg := r.Group("plugins")
+	rg := r.Group("plugins/")
 
 	plug := loader.PluginConfig{
 		PluginPath: "/tmp/plugins/hello.plugin",

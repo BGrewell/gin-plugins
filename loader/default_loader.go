@@ -102,7 +102,7 @@ func (pl *DefaultPluginLoader) RegisterPlugin(pluginName string) (err error) {
 			// Build path
 			root := ""
 			if plug.RouteRoot != "" {
-				root = fmt.Sprintf("/%s/", plug.RouteRoot)
+				root = fmt.Sprintf("%s/", plug.RouteRoot)
 			}
 			path := fmt.Sprintf("%s%s", root, route.Path)
 
