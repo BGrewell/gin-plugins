@@ -2,14 +2,15 @@ package host
 
 import (
 	"fmt"
-	plugins "github.com/bgrewell/gin-plugins"
-	"github.com/bgrewell/gin-plugins/helpers"
 	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"net/rpc"
+	"net/rpc/jsonrpc"
 	"os"
+
+	plugins "github.com/bgrewell/gin-plugins"
+	"github.com/bgrewell/gin-plugins/helpers"
 )
 
 type DefaultPluginHost struct {
@@ -41,19 +42,20 @@ func (ph *DefaultPluginHost) Serve() error {
 	// Output connection information ( format: CONNECT{{NAME:ROUTE_ROOT:PROTO:IP:PORT:COOKIE}} )
 	fmt.Printf("CONNECT{{%s:%s:%s:%s:%d:%s}}\n", ph.Plugin.(plugins.Plugin).Name(), ph.Plugin.(plugins.Plugin).RouteRoot(), ph.Proto, ph.Ip, ph.port, ph.Cookie)
 
-	// Register the RPC server to handle HTTP requests
-	rpc.HandleHTTP()
+	// Listen for connections
 	l, e := net.Listen(ph.Proto, fmt.Sprintf("%s:%d", ph.Ip, ph.port))
 	if e != nil {
-		return err
+		return e
 	}
+	defer l.Close()
 
-	// Service the RPC endpoint with the HTTP server
-	err = http.Serve(l, nil)
-	if err != nil {
-		return err
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			log.Fatal("Accept error:", err)
+		}
+		go jsonrpc.ServeConn(conn) // Serve connection with JSON-RPC
 	}
-	return nil
 }
 
 func (ph *DefaultPluginHost) GetPort() int {

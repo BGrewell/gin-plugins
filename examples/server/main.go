@@ -34,7 +34,15 @@ func main() {
 	r := setupRouter()
 	rg := r.Group("plugins")
 
-	l := loader.NewPluginLoader("/home/ben/repos/gin-plugins/examples/server/plugins/", "this_is_not_a_security_feature", rg)
+	plug := loader.PluginConfig{
+		PluginPath: "/tmp/plugins/hello.plugin",
+		Enabled:    true,
+		Cookie:     "this_is_not_a_security_feature",
+		Hash:       "",
+		Config:     nil,
+	}
+
+	l := loader.NewPluginLoader("/tmp/plugins", map[string]*loader.PluginConfig{"/tmp/plugins/hello.plugin": &plug}, rg, false)
 	active, err := l.Initialize()
 	if err != nil {
 		log.Fatal(err)

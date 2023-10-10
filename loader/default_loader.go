@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/rpc"
+	"net/rpc/jsonrpc"
 	"strings"
 
 	plugins "github.com/bgrewell/gin-plugins"
@@ -82,7 +82,7 @@ func (pl *DefaultPluginLoader) RegisterPlugin(pluginName string) (err error) {
 		return errors.New(fmt.Sprintf("no plugin was found with the name: %s", pluginName))
 	} else {
 		// Connect the rpc client
-		plug.Rpc, err = rpc.DialHTTP(plug.Proto, fmt.Sprintf("%s:%d", plug.Ip, plug.Port))
+		plug.Rpc, err = jsonrpc.Dial(plug.Proto, fmt.Sprintf("%s:%d", plug.Ip, plug.Port))
 		if err != nil {
 			return err
 		}
@@ -102,9 +102,9 @@ func (pl *DefaultPluginLoader) RegisterPlugin(pluginName string) (err error) {
 			// Build path
 			root := ""
 			if plug.RouteRoot != "" {
-				root = fmt.Sprintf("%s/", plug.RouteRoot)
+				root = fmt.Sprintf("/%s", plug.RouteRoot)
 			}
-			path := fmt.Sprintf("%s%s", root, route.Path)
+			path := fmt.Sprintf("%s/%s", root, route.Path)
 
 			// Create a map to direct api calls to the correct plugin and function
 			routeKey := fmt.Sprintf("%s:%s", route.Method, path)
