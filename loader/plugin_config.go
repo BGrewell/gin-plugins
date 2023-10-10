@@ -7,6 +7,7 @@ type PluginConfig struct {
 	Enabled    bool                   `json:"enabled" yaml:"enabled"`
 	Cookie     string                 `json:"cookie" yaml:"cookie"`
 	Hash       string                 `json:"hash" yaml:"hash"`
+	User       string                 `json:"user" yaml:"user"`
 	Config     map[string]interface{} `json:"config" yaml:"config"`
 }
 

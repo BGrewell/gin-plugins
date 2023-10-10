@@ -29,20 +29,26 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
+type Config struct {
+	Message string `json:"message"`
+}
+
 func main() {
 
 	r := setupRouter()
 	rg := r.Group("plugins/")
 
 	plug := loader.PluginConfig{
-		PluginPath: "/tmp/plugins/hello.plugin",
+		PluginPath: "/home/ben/repos/bengrewell/dtac_tools/main.plugin",
 		Enabled:    true,
 		Cookie:     "this_is_not_a_security_feature",
 		Hash:       "",
-		Config:     nil,
+		Config: map[string]interface{}{
+			"message": "this message comes from the plugin hosts configuration file",
+		},
 	}
 
-	l := loader.NewPluginLoader("/tmp/plugins", map[string]*loader.PluginConfig{"/tmp/plugins/hello.plugin": &plug}, rg, false)
+	l := loader.NewPluginLoader("/home/ben/repos/bengrewell/dtac_tools/", map[string]*loader.PluginConfig{"/home/ben/repos/bengrewell/dtac_tools/main.plugin": &plug}, rg, false)
 	active, err := l.Initialize()
 	if err != nil {
 		log.Fatal(err)
